@@ -2,6 +2,10 @@ package goml
 
 import "fmt"
 
+type matrix struct {
+	samples [][]float64
+}
+
 func validate(slice [][]float64) (bool, error) {
 	cols := len(slice[0])
 
@@ -14,19 +18,38 @@ func validate(slice [][]float64) (bool, error) {
 	return true, nil
 }
 
-func multiply(matrix1, matrix2 [][]float64) ([][]float64, error) {
-	if len(matrix1[0]) != len(matrix2) {
-		return matrix1, fmt.Errorf("Inconsistent matrix supplied")
+func (m *matrix) multiply(matrix2 [][]float64) (*matrix, error) {
+	if len(m.samples[0]) != len(matrix2) {
+		return &matrix{samples: m.samples}, fmt.Errorf("Inconsistent matrix supplied")
 	}
 
 	var product [][]float64
-	for k, row := range matrix1 {
+	for k, row := range m.samples {
 		for i, colVal := range row {
 			product[k][i] += colVal * matrix2[i][k]
 		}
 	}
 
-	return product, nil
+	return &matrix{samples: product}, nil
+}
+
+func (m *matrix) transpose() *matrix {
+	r := make([][]float64, len(m.samples[0]))
+	for x := range r {
+		r[x] = make([]float64, len(m.samples))
+	}
+
+	for y, s := range m.samples {
+		for x, e := range s {
+			r[x][y] = e
+		}
+	}
+
+	return &matrix{samples: r}
+}
+
+func (m *matrix) inverse() {
+
 }
 
 func isSquare(slice [][]float64) bool {
