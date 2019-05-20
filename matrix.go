@@ -1,6 +1,10 @@
 package goml
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/gonum/matrix/mat64"
+)
 
 type matrix struct {
 	samples [][]float64
@@ -48,8 +52,18 @@ func (m *matrix) transpose() *matrix {
 	return &matrix{samples: r}
 }
 
-func (m *matrix) inverse() {
+func (m *matrix) inverse() error {
+	if !isSquare(m.samples) {
+		return fmt.Errorf("Matrix is not square matrix")
+	}
 
+	len := len(m.samples)
+	a := mat64.NewDense(len, len, m.samples)
+
+	var lu mat64.LU
+	lu.Factorize(a)
+
+	return nil
 }
 
 func isSquare(slice [][]float64) bool {
