@@ -2,9 +2,11 @@ package goml
 
 // Regression includes samples, targets and prediction outcome
 type Regression struct {
-	Samples [][]float64
-	Targets [][]float64
-	Predict []float64
+	Samples      [][]float64
+	Targets      [][]float64
+	Predict      []float64
+	coefficients []float64
+	intersept    []float64
 }
 
 // Train datasets
@@ -48,7 +50,11 @@ func (e *Regression) computeCoefficients() error {
 		return er
 	}
 
-	ts.multiply(tf.samples)
+	// already checked squared matrix
+	m, _ := ts.multiply(tf.samples)
+
+	e.coefficients = m.getColumnValues(0)
+	e.intersept = e.coefficients[1:]
 
 	return nil
 }

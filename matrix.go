@@ -72,3 +72,13 @@ func isSquare(slice [][]float64) bool {
 
 	return rows == cols
 }
+
+func (m *matrix) getColumnValues(column int) []float64 {
+	var result []float64
+
+	for v := range m.samples {
+		result = append(result, v[column])
+	}
+
+	return result
+}
