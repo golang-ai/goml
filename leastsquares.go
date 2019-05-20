@@ -6,7 +6,7 @@ type Regression struct {
 	Targets      [][]float64
 	Predict      []float64
 	coefficients []float64
-	intersept    []float64
+	intercept    float64
 }
 
 // Train datasets
@@ -28,8 +28,15 @@ func (e *Regression) Train(samples [][]float64, targets []float64) {
 
 // }
 
-func predictSample() {
+// PredictSample predicts on samples
+func (e *Regression) PredictSample(sample []float64) float64 {
+	result := e.intercept
 
+	for k, v := range e.coefficients {
+		result += v * sample[k]
+	}
+
+	return result
 }
 
 // coefficient(b) = (X'X)-1X'Y
@@ -54,7 +61,8 @@ func (e *Regression) computeCoefficients() error {
 	m, _ := ts.multiply(tf.samples)
 
 	e.coefficients = m.getColumnValues(0)
-	e.intersept = e.coefficients[1:]
+	e.intercept = e.coefficients[0]
+	e.coefficients = e.coefficients[1:]
 
 	return nil
 }
