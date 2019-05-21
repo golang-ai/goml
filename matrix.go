@@ -2,12 +2,12 @@ package goml
 
 import (
 	"fmt"
-
-	"github.com/gonum/matrix/mat64"
 )
 
+type mtx [][]float64
+
 type matrix struct {
-	samples [][]float64
+	samples mtx
 }
 
 func validate(slice [][]float64) (bool, error) {
@@ -57,11 +57,7 @@ func (m *matrix) inverse() error {
 		return fmt.Errorf("Matrix is not square matrix")
 	}
 
-	len := len(m.samples)
-	a := mat64.NewDense(len, len, m.samples)
-
-	var lu mat64.LU
-	lu.Factorize(a)
+	m.samples.lu()
 
 	return nil
 }
@@ -81,4 +77,81 @@ func (m *matrix) getColumnValues(column int) []float64 {
 	}
 
 	return result
+}
+
+func zero(n int) mtx {
+	r := make([][]float64, n)
+	a := make([]float64, n*n)
+	for i := range r {
+		r[i] = a[n*i : n*(i+1)]
+	}
+	return r
+}
+
+func eye(n int) mtx {
+	r := zero(n)
+	for i := range r {
+		r[i][i] = 1
+	}
+
+	return r
+}
+
+func (a mtx) pivotize() mtx {
+	p := eye(len(a))
+	for j, r := range a {
+		max := r[j]
+		row := j
+		for i := j; i < len(a); i++ {
+			if a[i][j] > max {
+				max = a[i][j]
+				row = i
+			}
+		}
+		if j != row {
+			// swap rows
+			p[j], p[row] = p[row], p[j]
+		}
+	}
+	return p
+}
+
+func (m1 mtx) mul(m2 mtx) mtx {
+	r := zero(len(m1))
+	for i, r1 := range m1 {
+		for j := range m2 {
+			for k := range m1 {
+				r[i][j] += r1[k] * m2[k][j]
+			}
+		}
+	}
+	return r
+}
+
+func (a mtx) lu() (l, u, p mtx) {
+	l = zero(len(a))
+	u = zero(len(a))
+	p = a.pivotize()
+	a = p.mul(a)
+
+	for j := range a {
+		l[j][j] = 1
+		for i := 0; i <= j; i++ {
+			sum := 0.
+			for k := 0; k < i; k++ {
+				sum += u[k][j] * l[i][k]
+			}
+			u[i][j] = a[i][j] - sum
+		}
+
+		for i := j; i < len(a); i++ {
+			sum := 0.
+			for k := 0; k < j; k++ {
+				sum += u[k][j] * l[i][k]
+			}
+			l[i][j] = (a[i][j] - sum) / u[j][j]
+		}
+	}
+
+	return
 }
