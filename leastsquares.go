@@ -4,7 +4,7 @@ package goml
 type Regression struct {
 	Samples      [][]float64
 	Targets      [][]float64
-	Predict      []float64
+	Predicted    []float64
 	coefficients []float64
 	intercept    float64
 }
@@ -24,9 +24,11 @@ func (e *Regression) Train(samples [][]float64, targets []float64) {
 	e.computeCoefficients()
 }
 
-// func (e *Regression) Predict(samples [][]float64) float64 {
-
-// }
+func (e *Regression) Predict(samples [][]float64) {
+	for k, v := range samples {
+		e.Predicted[k] = e.PredictSample(v)
+	}
+}
 
 // PredictSample predicts on samples
 func (e *Regression) PredictSample(sample []float64) float64 {
