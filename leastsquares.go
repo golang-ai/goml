@@ -1,5 +1,7 @@
 package goml
 
+import "fmt"
+
 // Regression includes samples, targets and prediction outcome
 type Regression struct {
 	Samples      [][]float64
@@ -11,10 +13,14 @@ type Regression struct {
 
 // Train datasets
 func (e *Regression) Train(samples [][]float64, targets []float64) {
+	e.Samples = make([][]float64, len(samples))
+
 	// merge samples
 	for k, v := range samples {
 		e.Samples[k] = append(e.Samples[k], v...)
 	}
+
+	e.Targets = make([][]float64, len(targets))
 
 	// merge targets
 	for k := range samples {
@@ -24,7 +30,10 @@ func (e *Regression) Train(samples [][]float64, targets []float64) {
 	e.computeCoefficients()
 }
 
+// Predict performs prediction on samples
 func (e *Regression) Predict(samples [][]float64) {
+	e.Predicted = make([]float64, len(samples))
+
 	for k, v := range samples {
 		e.Predicted[k] = e.PredictSample(v)
 	}
@@ -35,9 +44,10 @@ func (e *Regression) PredictSample(sample []float64) float64 {
 	result := e.intercept
 
 	for k, v := range e.coefficients {
+		fmt.Println(k, v, sample[k], result)
 		result += v * sample[k]
 	}
-
+	fmt.Println(result)
 	return result
 }
 
@@ -45,7 +55,7 @@ func (e *Regression) PredictSample(sample []float64) float64 {
 func (e *Regression) computeCoefficients() error {
 	samplesMatrix := e.getSamplesMatrix()
 	targetsMatrix := e.getTargetsMatrix()
-
+	// fmt.Println(samplesMatrix.samples)
 	ts, err := samplesMatrix.transpose().multiply(samplesMatrix.samples)
 	tf, er := samplesMatrix.transpose().multiply(targetsMatrix.samples)
 
@@ -58,7 +68,7 @@ func (e *Regression) computeCoefficients() error {
 	if er != nil {
 		return er
 	}
-
+	fmt.Println(ts, tf)
 	// already checked squared matrix
 	m, _ := ts.multiply(tf.samples)
 
@@ -70,7 +80,7 @@ func (e *Regression) computeCoefficients() error {
 }
 
 func (e *Regression) getSamplesMatrix() *matrix {
-	var samples [][]float64
+	samples := make([][]float64, len(e.Samples))
 
 	for k, v := range e.Samples {
 		samples[k] = append([]float64{1}, v...)

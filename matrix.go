@@ -26,14 +26,21 @@ func (m *matrix) multiply(matrix2 [][]float64) (*matrix, error) {
 	if len(m.samples[0]) != len(matrix2) {
 		return &matrix{samples: m.samples}, fmt.Errorf("Inconsistent matrix supplied")
 	}
+	// fmt.Println(m.samples, matrix2)
+	product := make([][]float64, len(m.samples))
 
-	var product [][]float64
+	for j := range product {
+		product[j] = make([]float64, len(m.samples))
+	}
+
+	// fmt.Println(product)
 	for k, row := range m.samples {
 		for i, colVal := range row {
-			product[k][i] += colVal * matrix2[i][k]
+			product[k][k] += colVal * matrix2[i][k]
 		}
 	}
 
+	// fmt.Println(product)
 	return &matrix{samples: product}, nil
 }
 
@@ -72,7 +79,7 @@ func isSquare(slice [][]float64) bool {
 func (m *matrix) getColumnValues(column int) []float64 {
 	var result []float64
 
-	for v := range m.samples {
+	for _, v := range m.samples {
 		result = append(result, v[column])
 	}
 
