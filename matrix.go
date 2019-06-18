@@ -26,22 +26,25 @@ func (m *matrix) multiply(matrix2 [][]float64) (*matrix, error) {
 	if len(m.samples[0]) != len(matrix2) {
 		return &matrix{samples: m.samples}, fmt.Errorf("Inconsistent matrix supplied")
 	}
-	// fmt.Println(m.samples, matrix2)
-	product := make([][]float64, len(m.samples))
 
-	for j := range product {
-		product[j] = make([]float64, len(m.samples))
-	}
+	product, _ := dot(m.samples, matrix2)
 
-	// fmt.Println(product)
-	for k, row := range m.samples {
-		for i, colVal := range row {
-			product[k][k] += colVal * matrix2[i][k]
+	return &matrix{samples: product}, nil
+}
+
+func dot(x, y [][]float64) ([][]float64, error) {
+	out := make([][]float64, len(x))
+
+	for i := 0; i < len(x); i++ {
+		out[i] = make([]float64, len(y[0]))
+		for j := 0; j < len(y[0]); j++ {
+			for k := 0; k < len(y); k++ {
+				out[i][j] += x[i][k] * y[k][j]
+			}
 		}
 	}
 
-	// fmt.Println(product)
-	return &matrix{samples: product}, nil
+	return out, nil
 }
 
 func (m *matrix) transpose() *matrix {
