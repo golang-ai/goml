@@ -44,10 +44,9 @@ func (e *Regression) PredictSample(sample []float64) float64 {
 	result := e.intercept
 
 	for k, v := range e.coefficients {
-		fmt.Println(k, v, sample[k], result)
 		result += v * sample[k]
 	}
-	fmt.Println(result)
+
 	return result
 }
 
@@ -55,7 +54,8 @@ func (e *Regression) PredictSample(sample []float64) float64 {
 func (e *Regression) computeCoefficients() error {
 	samplesMatrix := e.getSamplesMatrix()
 	targetsMatrix := e.getTargetsMatrix()
-	// fmt.Println(samplesMatrix.samples)
+
+	fmt.Println(samplesMatrix.samples)
 	ts, err := samplesMatrix.transpose().multiply(samplesMatrix.samples)
 	tf, er := samplesMatrix.transpose().multiply(targetsMatrix.samples)
 
@@ -63,18 +63,23 @@ func (e *Regression) computeCoefficients() error {
 		return err
 	}
 
-	ts.inverse()
+	fmt.Println(ts.samples, tf.samples)
+	l, _ := ts.inverse()
 
 	if er != nil {
 		return er
 	}
-	fmt.Println(ts, tf)
-	// already checked squared matrix
-	m, _ := ts.multiply(tf.samples)
 
+	// already checked squared matrix
+	ts.samples = l
+	m, _ := ts.multiply(tf.samples)
+	fmt.Println(m.samples)
 	e.coefficients = m.getColumnValues(0)
+	fmt.Println(e.coefficients)
+
 	e.intercept = e.coefficients[0]
 	e.coefficients = e.coefficients[1:]
+	fmt.Println(e.intercept, e.coefficients)
 
 	return nil
 }

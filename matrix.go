@@ -62,14 +62,14 @@ func (m *matrix) transpose() *matrix {
 	return &matrix{samples: r}
 }
 
-func (m *matrix) inverse() error {
+func (m *matrix) inverse() (mtx, error) {
 	if !isSquare(m.samples) {
-		return fmt.Errorf("Matrix is not square matrix")
+		return nil, fmt.Errorf("Matrix is not square matrix")
 	}
 
-	m.samples.lu()
+	l, _, _ := m.samples.lu()
 
-	return nil
+	return l, nil
 }
 
 func isSquare(slice [][]float64) bool {
