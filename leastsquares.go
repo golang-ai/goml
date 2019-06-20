@@ -23,11 +23,15 @@ func (e *Regression) Train(samples [][]float64, targets []float64) {
 	e.Targets = make([][]float64, len(targets))
 
 	// merge targets
-	for k := range samples {
-		e.Targets[k] = append(e.Targets[k], targets...)
+	for k, v := range targets {
+		e.Targets[k] = append(e.Targets[k], v)
 	}
 
-	e.computeCoefficients()
+	err := e.computeCoefficients()
+
+	if err != nil {
+		panic(err)
+	}
 }
 
 // Predict performs prediction on samples
@@ -55,7 +59,7 @@ func (e *Regression) computeCoefficients() error {
 	samplesMatrix := e.getSamplesMatrix()
 	targetsMatrix := e.getTargetsMatrix()
 
-	fmt.Println(samplesMatrix.samples)
+	fmt.Println(samplesMatrix.samples, targetsMatrix.samples)
 	ts, err := samplesMatrix.transpose().multiply(samplesMatrix.samples)
 	tf, er := samplesMatrix.transpose().multiply(targetsMatrix.samples)
 
@@ -63,7 +67,6 @@ func (e *Regression) computeCoefficients() error {
 		return err
 	}
 
-	fmt.Println(ts.samples, tf.samples)
 	l, _ := ts.inverse()
 
 	if er != nil {
@@ -72,14 +75,16 @@ func (e *Regression) computeCoefficients() error {
 
 	// already checked squared matrix
 	ts.samples = l
+	fmt.Println("ts, tf", ts.samples, tf.samples)
 	m, _ := ts.multiply(tf.samples)
-	fmt.Println(m.samples)
+
+	fmt.Println("ms; ", m.samples)
 	e.coefficients = m.getColumnValues(0)
-	fmt.Println(e.coefficients)
+	//fmt.Println(e.coefficients)
 
 	e.intercept = e.coefficients[0]
 	e.coefficients = e.coefficients[1:]
-	fmt.Println(e.intercept, e.coefficients)
+	fmt.Println("intercept and coeff: ", e.intercept, e.coefficients)
 
 	return nil
 }
